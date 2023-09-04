@@ -14,7 +14,7 @@ var SEPARATOR = []byte(":")
 
 func actionNotify(payload []byte) error {
 	parts := bytes.Split(payload, SEPARATOR)
-	if len(parts) <= 2 {
+	if len(parts) < 2 {
 		return errors.New("malformed notify action, expected at least two parts")
 	}
 
@@ -26,7 +26,7 @@ func actionNotify(payload []byte) error {
 
 func actionAlert(payload []byte) error {
 	parts := bytes.Split(payload, SEPARATOR)
-	if len(parts) <= 2 {
+	if len(parts) < 2 {
 		return errors.New("malformed alert action, expected at least two parts")
 	}
 
