@@ -18,7 +18,7 @@ func initializeActions() error {
 	var err error
 	iconPath, err = filepath.Abs("./assets/information.png")
 	if err != nil {
-		return fmt.Errorf("Failed to load application icon: %s", err.Error())
+		return fmt.Errorf("failed to load application icon: %s", err.Error())
 	}
 	return nil
 }
