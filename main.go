@@ -105,7 +105,7 @@ func broadcast() error {
 	}
 	defer conn.Close()
 
-	message := []byte("notify:Hello World!")
+	message := []byte("notify:Hello!:How are you?")
 	if _, err = conn.Write(message); err != nil {
 		fmt.Println("Failed to write to UDP broadcast channel")
 		return err
