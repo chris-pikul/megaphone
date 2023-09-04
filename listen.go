@@ -5,7 +5,39 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
+
+var (
+	iconPath string
+	quit chan bool
+)
+
+func startListening() {
+	if err := initializeActions(); err != nil {
+		fmt.Printf("Could not start listening: %s", err.Error())
+		os.Exit(-1)
+		return
+	}
+
+	quit = make(chan bool, 1)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	go func() {
+		<- signals
+		
+		fmt.Println("Picked up close signal")
+		Quit()
+	}()
+
+	go listen()
+
+	// Wait for close signal
+	fmt.Println("Waiting for close signal")
+	<- quit
+}
 
 func listen() {
 	var err error

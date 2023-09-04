@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 
@@ -11,6 +13,15 @@ import (
 )
 
 var SEPARATOR = []byte(":")
+
+func initializeActions() error {
+	var err error
+	iconPath, err = filepath.Abs("./assets/information.png")
+	if err != nil {
+		return fmt.Errorf("Failed to load application icon: %s", err.Error())
+	}
+	return nil
+}
 
 func actionNotify(payload []byte) error {
 	parts := bytes.Split(payload, SEPARATOR)
