@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 )
@@ -13,11 +16,22 @@ const HOST string = "255.255.255.255";
 const PORT int = 5790
 
 var (
+	iconPath string
 	quit chan bool
 )
 
 func main() {
 	fmt.Println("Starting megaphone");
+
+	{
+		var err error
+		iconPath, err = filepath.Abs("./assets/information.png")
+		if err != nil {
+			fmt.Println("Unable to resolve default icon for alerts!")
+			os.Exit(-1)
+			return
+		}
+	}
 
 	quit = make(chan bool, 1)
 	signals := make(chan os.Signal, 1)
@@ -67,6 +81,7 @@ func listen() {
 			continue
 		}
 		fmt.Printf("Read %d bytes from %s: %s\n", size, addr.String(), buffer[:size])
+		parseMessage(buffer[:size])
 
 		packet.Close()
 	}
@@ -90,7 +105,7 @@ func broadcast() error {
 	}
 	defer conn.Close()
 
-	message := []byte("Hello, World!")
+	message := []byte("notify:Hello World!")
 	if _, err = conn.Write(message); err != nil {
 		fmt.Println("Failed to write to UDP broadcast channel")
 		return err
@@ -98,4 +113,27 @@ func broadcast() error {
 
 	fmt.Println("Message sent")
 	return nil
+}
+
+func parseMessage(message []byte) error {
+	sepLoc := bytes.IndexRune(message, ':')
+	if sepLoc < 0 || sepLoc >= len(message) {
+		return errors.New("malformed message")
+	}
+
+	action := string(message[:sepLoc])
+	payload := message[sepLoc+1:]
+
+	switch action {
+	case "notify":
+		return actionNotify(payload)
+	case "alert":
+		return actionAlert(payload)
+	case "beep":
+		return actionBeep(payload)
+	case "uri":
+		return actionURI(payload)
+	default:
+		return fmt.Errorf("unknown message action %s", action)
+	}
 }
